@@ -14,7 +14,7 @@ static struct retro_log_callback logging;
 static retro_log_printf_t log_cb;
 
 static char core_info[512];
-
+static char cmd[MAX_PATH];
 
 static void fallback_log(enum retro_log_level level, const char *fmt, ...)
 {
@@ -141,10 +141,11 @@ void retro_reset(void)
 
 void retro_run(void)
 {
-    // Clear the display.
-    unsigned stride = 320;
-    video_cb(frame_buf, 320, 240, stride << 2);
-
+//    // Clear the display.
+//    unsigned stride = 320;
+//    video_cb(frame_buf, 320, 240, stride << 2);
+//
+//
     environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
 }
 
@@ -152,7 +153,6 @@ bool retro_load_game(const struct retro_game_info *info)
 {
     char line[MAX_PATH];
     char cmd_tmp[MAX_PATH];
-    char cmd[MAX_PATH];
     char safe_path[MAX_PATH];
 
     log_cb(RETRO_LOG_DEBUG, LOG_PREFIX "reload_load_game path [%s]\n", info->path);
@@ -174,7 +174,12 @@ bool retro_load_game(const struct retro_game_info *info)
     snprintf(cmd, sizeof(cmd)-1, cmd_tmp, safe_path);
     log_cb(RETRO_LOG_INFO, LOG_PREFIX "Command [%s]\n", cmd);
 
-    char* args[4] = { "sh", "-c", cmd };
+    return true;
+}
+
+void retro_unload_game(void)
+{
+    char* args[4] = { "sh", "-c", cmd, 0 };
 
     for (int i = 0; i < 3; i++) {
         if (args[i])
@@ -182,11 +187,6 @@ bool retro_load_game(const struct retro_game_info *info)
     }
 
     execvp(args[0], args);
-    return true;
-}
-
-void retro_unload_game(void)
-{
 }
 
 unsigned retro_get_region(void)
