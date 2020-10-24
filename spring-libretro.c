@@ -13,7 +13,6 @@ static uint32_t *frame_buf;
 static struct retro_log_callback logging;
 static retro_log_printf_t log_cb;
 
-static char core_info[512];
 static char cmd[MAX_PATH];
 
 static void fallback_log(enum retro_log_level level, const char *fmt, ...)
@@ -54,7 +53,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-    info->library_version  = "0.1.0" GIT_VERSION;
+    info->library_version  = "0.2.0" GIT_VERSION;
     info->need_fullpath    = true;
     info->valid_extensions = NULL;
 }
@@ -92,22 +91,6 @@ void retro_set_environment(retro_environment_t cb)
         log_cb = logging.log;
     else
         log_cb = fallback_log;
-
-    const char* path;
-    cb(RETRO_ENVIRONMENT_GET_LIBRETRO_PATH, &path);
-
-    strncpy(core_info, path, sizeof(core_info)-1);
-
-    for (int i = strlen(core_info); i >= 0; i--) {
-        if (core_info[i] == '.') {
-            core_info[i] = '\0';
-            break;
-        }
-    }
-
-    strncat(core_info, ".info", sizeof(core_info)-1);
-
-    log_cb(RETRO_LOG_DEBUG, LOG_PREFIX "core_info path [%s]\n", core_info);
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
@@ -154,7 +137,23 @@ bool retro_load_game(const struct retro_game_info *info)
     char line[MAX_PATH];
     char cmd_tmp[MAX_PATH];
     char safe_path[MAX_PATH];
+    char core_info[MAX_PATH];
 
+    const char* path;
+    environ_cb(RETRO_ENVIRONMENT_GET_LIBRETRO_PATH, &path);
+
+    strncpy(core_info, path, sizeof(core_info)-1);
+
+    for (int i = strlen(core_info); i >= 0; i--) {
+        if (core_info[i] == '.') {
+            core_info[i] = '\0';
+            break;
+        }
+    }
+
+    strncat(core_info, ".info", sizeof(core_info)-1);
+
+    log_cb(RETRO_LOG_DEBUG, LOG_PREFIX "core_info path [%s]\n", core_info);
     log_cb(RETRO_LOG_DEBUG, LOG_PREFIX "reload_load_game path [%s]\n", info->path);
 
     snprintf(safe_path, sizeof(safe_path)-1, "'%s'", info->path);
