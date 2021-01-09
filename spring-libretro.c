@@ -135,26 +135,32 @@ void retro_run(void)
 bool retro_load_game(const struct retro_game_info *info)
 {
     char line[MAX_PATH];
-    char cmd_tmp[MAX_PATH];
+    char cmd_info[MAX_PATH];
     char safe_path[MAX_PATH];
-    char core_info[MAX_PATH];
+    char core_info[MAX_PATH] = {0};
+    char tmp[MAX_PATH];
 
     const char* path;
     environ_cb(RETRO_ENVIRONMENT_GET_LIBRETRO_PATH, &path);
 
-    strncpy(core_info, path, sizeof(core_info)-1);
+    strcpy(tmp, path);
+    char* ptr = tmp + strlen(tmp)-1;
+    while (*ptr != '.')
+        --ptr;
+    strcpy(ptr, ".info");
 
-    for (int i = strlen(core_info); i >= 0; i--) {
-        if (core_info[i] == '.') {
-            core_info[i] = '\0';
-            break;
-        }
+    if (access(tmp, F_OK) == 0) {
+        strcpy(core_info, tmp);
+    }
+    else {
+        strcat(core_info, "/usr/share/libretro/info");
+        while (*ptr != '/')
+            --ptr;
+        strcat(core_info, ptr);
     }
 
-    strncat(core_info, ".info", sizeof(core_info)-1);
-
-    log_cb(RETRO_LOG_DEBUG, LOG_PREFIX "core_info path [%s]\n", core_info);
-    log_cb(RETRO_LOG_DEBUG, LOG_PREFIX "reload_load_game path [%s]\n", info->path);
+    printf("core_info path [%s]\n", core_info);
+    printf("reload_load_game path [%s]\n", info->path);
 
     snprintf(safe_path, sizeof(safe_path)-1, "'%s'", info->path);
 
@@ -165,13 +171,13 @@ bool retro_load_game(const struct retro_game_info *info)
     }
 
     while (fgets(line, sizeof(line), f)) {
-        sscanf(line, "command = \"%[^\"]\"", cmd_tmp);
+        sscanf(line, "command = \"%[^\"]\"", cmd_info);
     }
 
     fclose(f);
 
-    snprintf(cmd, sizeof(cmd)-1, cmd_tmp, safe_path);
-    log_cb(RETRO_LOG_INFO, LOG_PREFIX "Command [%s]\n", cmd);
+    snprintf(cmd, sizeof(cmd)-1, cmd_info, safe_path);
+    printf("Command [%s]\n", cmd);
 
     return true;
 }
