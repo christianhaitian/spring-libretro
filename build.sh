@@ -1,13 +1,14 @@
 #!/bin/bash
 
-if [[ ! -f "spring_libretro.so" ]]; then
-  make
-fi
-
 if [[ "$1" == "clean" ]]; then
   rm *.so
   echo "Directory has been cleaned of created .so files."
   exit 0
+fi
+
+if [[ ! -f "spring_libretro.so" ]]; then
+  make
+  strip spring_libretro.so
 fi
 
 for info in *.info
