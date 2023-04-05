@@ -84,7 +84,7 @@ void retro_set_environment(retro_environment_t cb)
 {
     environ_cb = cb;
 
-    bool no_content = true;
+    bool no_content = false;
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
 
     if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
@@ -153,7 +153,7 @@ bool retro_load_game(const struct retro_game_info *info)
         strcpy(core_info, tmp);
     }
     else {
-        strcat(core_info, "/usr/share/libretro/info");
+        strcat(core_info, "/home/ark/.config/retroarch/cores");
         while (*ptr != '/')
             --ptr;
         strcat(core_info, ptr);

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 if [[ "$1" == "clean" ]]; then
+  make clean
   rm *.so
   echo "Directory has been cleaned of created .so files."
   exit 0
